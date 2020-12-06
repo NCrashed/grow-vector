@@ -40,6 +40,8 @@ assume length :: (Unbox a, PrimMonad m) => x : GrowVector (PrimState m) a -> m {
 
 null :: (Unbox a, PrimMonad m) => x : GrowVector (PrimState m) a -> m { v:Bool | v <=> gvlen x = 0}
 
+new :: (Unbox a, PrimMonad m) => c:Nat -> m {v:(GrowVector (PrimState m) a) | gvlen v = 0 && gvcap v = c}
+
 assume newSized :: (Unbox a, PrimMonad m) => l:Nat -> {c:Nat | c >= l} -> m { v:(GrowVector (PrimState m) a) | l = gvlen v && c = gvcap v }
 
 assume slice :: (Unbox a, PrimMonad m)
