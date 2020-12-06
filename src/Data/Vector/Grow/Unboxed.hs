@@ -2,6 +2,18 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
+-- |
+-- Module      : Data.Vector.Grow.Unboxed
+-- Copyright   : (c) 2020 Gushcha Anton
+-- License     : MIT
+-- Maintainer  : ncrashed@protonmail.com
+-- Stability   : unstable
+-- Portability : non-portable
+--
+-- Module defines mutable vector that can grow in size automatically when an user
+-- adds new elements at the end of vector.
+--
+-- We reallocate vector with 1.5x length to get amortized append.
 module Data.Vector.Grow.Unboxed(
     GrowVector(..)
   , IOGrowVector
@@ -47,6 +59,7 @@ data GrowVector s a = GrowVector {
 , growVectorLength   :: !(MutVar s Int)
 } deriving (Generic)
 
+-- | Synonim for 'GrowVector' in 'IO' monad
 type IOGrowVector a = GrowVector RealWorld a
 
 -- | Return current capacity of the vector (amount of elements that it can fit without realloc)
