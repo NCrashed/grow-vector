@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -65,18 +66,18 @@ type IOGrowVector a = GrowVector RealWorld a
 -- | Return current capacity of the vector (amount of elements that it can fit without realloc)
 capacity :: (Unbox a, PrimMonad m) => GrowVector (PrimState m) a -> m Int
 capacity v = do
-  mv <- readMutVar . growVector $! v
+  mv <- readMutVar $ growVector v
   pure $ M.length mv
 {-# INLINE capacity #-}
 
 -- | Return current amount of elements in the vector
 length :: (Unbox a, PrimMonad m) => GrowVector (PrimState m) a -> m Int
-length = readMutVar . growVectorLength
+length v = readMutVar $ growVectorLength v
 {-# INLINE length #-}
 
 -- | Return 'True' if there is no elements inside the vector
 null :: (Unbox a, PrimMonad m) => GrowVector (PrimState m) a -> m Bool
-null = fmap (== 0) . length
+null v = fmap (== 0) $ length v
 {-# INLINE null #-}
 
 -- | Allocation of new growable vector with given capacity.
@@ -98,7 +99,7 @@ slice :: (Unbox a, PrimMonad m)
   -> m (GrowVector (PrimState m) a)
 slice i n v = do
   newSize <- newMutVar n
-  mv <- readMutVar . growVector $! v
+  mv <- readMutVar $ growVector v
   newVec <- newMutVar $! M.slice i n mv
   pure $! GrowVector newVec newSize
 {-# INLINABLE slice #-}
@@ -117,13 +118,14 @@ thaw u = do
 -- | Freezing growable vector. It will contain only actual elements of the vector not including capacity
 -- space, but you should call 'U.force' on resulting vector to not hold the allocated capacity of original
 -- vector in memory.
+
 freeze :: (Unbox a, PrimMonad m)
   => GrowVector (PrimState m) a
   -> m (U.Vector a)
 freeze v = do
   n <- length v
-  mv <- readMutVar . growVector $! v
-  U.freeze . M.take n $! mv
+  mv <- readMutVar $ growVector v
+  U.freeze $ M.take n mv
 {-# INLINABLE freeze #-}
 
 -- | Ensure that grow vector has at least given capacity possibly with reallocation.
@@ -134,19 +136,19 @@ ensure :: (Unbox a, PrimMonad m)
 ensure v n = do
   c <- capacity v
   unless (c >= n) $ do
-    mv <- readMutVar . growVector $! v
+    mv <- readMutVar $ growVector v
     writeMutVar (growVector v) =<< M.grow mv (n - c)
 {-# INLINABLE ensure #-}
 
 -- | Ensure that grow vector has enough space for additonal n elements.
--- We grow vector by 1.5 factor or by
+-- We grow vector by 1.5 factor or by required elements count * 1.5.
 ensureAppend :: (Unbox a, PrimMonad m)
   => GrowVector (PrimState m) a
   -> Int -- ^ Additional n elements
   -> m ()
 ensureAppend v i = do
-  n <- readMutVar . growVectorLength $! v
-  mv <- readMutVar . growVector $! v
+  n <- readMutVar $ growVectorLength v
+  mv <- readMutVar $ growVector v
   let c = M.length mv
   unless (c >= n + i) $ do
     let growFactor = 1.5
@@ -160,9 +162,11 @@ read :: (Unbox a, PrimMonad m)
   -> Int -- ^ Index of element. Must be in [0 .. length) range
   -> m a
 read v i = do
-  n <- readMutVar . growVectorLength $! v
+  n <- readMutVar $ growVectorLength v
+#ifndef LIQUID
   when (i < 0 || i >= n) $ error $ "GrowVector.read: index " <> show i <> " is out bounds " <> show n
-  mv <- readMutVar . growVector $! v
+#endif
+  mv <- readMutVar $ growVector v
   M.unsafeRead mv i
 {-# INLINABLE read #-}
 
@@ -172,7 +176,7 @@ unsafeRead :: (Unbox a, PrimMonad m)
   -> Int -- ^ Index of element. Must be in [0 .. length) range
   -> m a
 unsafeRead v i = do
-  mv <- readMutVar . growVector $! v
+  mv <- readMutVar $ growVector v
   M.unsafeRead mv i
 {-# INLINABLE unsafeRead #-}
 
@@ -183,9 +187,11 @@ write :: (Unbox a, PrimMonad m)
   -> a
   -> m ()
 write v i a = do
-  n <- readMutVar . growVectorLength $! v
+  n <- readMutVar $ growVectorLength v
+#ifndef LIQUID
   when (i < 0 || i >= n) $ error $ "GrowVector.write: index " <> show i <> " is out bounds " <> show n
-  mv <- readMutVar . growVector $! v
+#endif
+  mv <- readMutVar $ growVector v
   M.unsafeWrite mv i a
 {-# INLINABLE write #-}
 
@@ -196,7 +202,7 @@ unsafeWrite :: (Unbox a, PrimMonad m)
   -> a
   -> m ()
 unsafeWrite v i a = do
-  mv <- readMutVar . growVector $! v
+  mv <- readMutVar $ growVector v
   M.unsafeWrite mv i a
 {-# INLINABLE unsafeWrite #-}
 
@@ -217,8 +223,8 @@ unsafePushBack :: (Unbox a, PrimMonad m)
   -> a
   -> m ()
 unsafePushBack v a = do
-  n <- readMutVar . growVectorLength $! v
-  mv <- readMutVar . growVector $! v
+  n <- readMutVar $ growVectorLength v
+  mv <- readMutVar $ growVector v
   M.write mv n a
   writeMutVar (growVectorLength v) (n+1)
 {-# INLINABLE unsafePushBack #-}

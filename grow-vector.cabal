@@ -1,7 +1,7 @@
 name:                grow-vector
 synopsis:            Mutable vector with efficient appends
 description:         Mutable vector with efficient updates. Simple implementation on partially filled array with capacity tracking and resizing.
-version:             0.1.0.0
+version:             0.1.1.0
 license:             MIT
 license-file:        LICENSE
 copyright:           2020 Anton Gushcha
@@ -12,6 +12,7 @@ cabal-version:       1.24
 extra-source-files:
   README.md
   CHANGELOG.md
+data-files:           src/Data/Vector/Grow/Unboxed.spec
 
 source-repository head
   type: git
@@ -36,6 +37,7 @@ library
         liquid-base
       , liquid-vector
       , liquidhaskell >= 0.8.10
+    cpp-options: -DLIQUID
   else
     build-depends:
         base          >= 4.5      && < 4.15
