@@ -1,3 +1,7 @@
+# 0.1.4.0
+
+* Relax base upper bounds.
+
 # 0.1.3.0
 
 * Add modules for `Storable` and boxed vectors.
