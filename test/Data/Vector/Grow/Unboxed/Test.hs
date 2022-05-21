@@ -6,7 +6,7 @@ import Control.Monad.Primitive (RealWorld)
 import Data.Vector.Grow.Unboxed (GrowVector)
 import qualified Data.Vector.Grow.Unboxed as U
 
-import Test.Tasty.Hspec
+import Test.Hspec
 
 spec_creation :: Spec
 spec_creation = describe "vector creation" $ do

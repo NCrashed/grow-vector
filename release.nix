@@ -10,5 +10,5 @@ in project rec {
   '';
   overlays = [ (import (import ./nix/liquidhaskell.nix) { inherit compiler; }) ];
   overlaysAfter = [ ((import ./solver.nix) { inherit compiler; }) ];
-  compiler = "ghc8102";
+  compiler = "ghc8107";
 }
