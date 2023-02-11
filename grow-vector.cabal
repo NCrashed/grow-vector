@@ -82,3 +82,5 @@ test-suite grow-vector-test
     , tasty-hspec
     , tasty-quickcheck
     , hspec
+  build-tool-depends:
+      tasty-discover:tasty-discover
